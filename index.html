@@ -1,10 +1,96 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
     <head>
+        <meta charset="utf-8">
         <title>Hello</title>
+        <style>
+            #chat_area{
+                border: black solid 2px;
+                width: 400px;
+                height: 600px;
+            }
+            #chat_list{
+                border: red solid 2px;
+                
+                height: 85%;
+                width: auto;
+                
+                overflow: auto;
+
+                font-size: 1.2em;
+                
+            }
+            #chat_input_area{
+                border: blue solid 2px;
+                
+                width: auto;
+                height: 14%;
+            }
+            #text_input{
+                
+                width: 99%;
+                height: 93%;
+
+                resize: none;
+                font-size: 1.2em;
+            }
+
+        </style>
     </head>
     <body>
-        <h1>Hello new world</h1>
-    </body>
+       <section id="chat_area">
+           <div id="chat_list">
 
+           </div>
+           <div id="chat_input_area">
+                <textarea id="text_input">
+
+                </textarea>
+           </div>
+       </section>
+    </body>
+    <script>
+        var ws = new WebSocket('ws://localhost:3001');
+
+        ws.onopen = function(event){
+            ws.send('Connect To Server');
+        }
+
+        ws.onmessage = function(event){
+            console.log('Server message : ', event.data);
+            appendMessageToDisplay(document.getElementById('chat_list'),event.data);
+        }
+        
+        var input = document.getElementById("text_input");
+        input.addEventListener('keypress',inputUserMessage);
+
+        function inputUserMessage(e){
+            let msg = getUserTextInput(e);
+            if(msg != null){
+                appendMessageToDisplay(document.getElementById('chat_list'),msg);
+                ws.send(msg);    
+            }
+            
+        }
+
+        function getUserTextInput(e){
+            if(e.keyCode == 13){//enter
+                let msg = input.value.trim();
+                input.value = '';
+        
+                return msg;
+            }
+        }
+
+        
+
+        function appendMessageToDisplay(target_element, msg){
+            let messageElement = document.createElement('div');
+            messageElement.innerHTML = msg;
+
+            target_element.appendChild(messageElement);
+        }
+
+        
+    </script>
 </html>
