@@ -1,43 +1,44 @@
+"use strict";
 
 const mongoClient = require('mongodb').MongoClient;
 const url = 'mongodb://localhost:32768/';
 
-var createChatUsersCollection = function(){
-    mongoClient.connect(url, {useNewUrlParser: true},function(err, db){
-        if(err) throw err;
-        var dbo = db.db('chat');
 
-        dbo.createCollection("chatusers", function(err, res){
-            if(err) throw err;
-            console.log("chatUser Collection created!.");
-            db.close();
-        });    
-    });
-    
-};
+var connectMongoDB = function(){
+    return mongoClient.connect(url);
+}
 
-var createChatUser = function(new_name, pwd){
-    mongoClient.connect(url, function(err, db){
-        var dbo = db.db('chat');
-
-        dbo.collection('chatusers').insert({name: new_name, password: pwd});
-        dbo.close;
+var getDatabase = function(dbName){
+    return connectMongoDB(url)
+    .then((db)=>{
+        var dbo = db.db(dbName);
+        
+        return dbo;
     });
 }
 
-var findChatUser = function(name){
-    mongoClient.connect(url, function(err, db){
-        var dbo = db.db('chat');
+var getCollection = function(dbName, collectionName){
+    return getDatabase(dbName)
+            .then((dbo)=>{
+                return dbo.collection(collectionName);
+            })
+}
 
-        dbo.collection('chatusers').findOne({name: name}, function(err, result){
-            console.log('result ->'+ result);
-            
-        });
+// var findChatUserByName = function(dbName, collectioName, userName){
+//     return getCollection(dbName, collectioName)
+//     .then((myCollection)=>{
+//         return myCollection.findOne({name : userName});
+//     })
+// }
 
-        db.close();
+var findChatUserByName = function(mycollection, userName){
+    return mycollection
+    .then((thisCollection)=>{
+        return thisCollection.findOne({name : userName});
     })
+    
 }
 
-exports.createChatUsersCollection = createChatUsersCollection;
-exports.createChatUser = createChatUser;
-exports.findChatUser = findChatUser;
+
+exports.getCollection = getCollection;
+exports.findChatUserByName = findChatUserByName;
